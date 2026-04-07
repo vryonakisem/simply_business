@@ -1,0 +1,15 @@
+SELECT 
+    f.TRADE,
+    COUNT(DISTINCT p.POLICY_ID) AS policies,
+    ROUND(SUM(t.COMMISSION), 0) AS total_commission,
+    ROUND(AVG(t.COMMISSION), 2) AS avg_commission_per_txn,
+    ROUND(SUM(t.COMMISSION) / COUNT(DISTINCT p.POLICY_ID), 2) AS commission_per_policy
+FROM form_submissions f
+JOIN policy_data p ON p.FORM_ID = f.FORM_ID
+JOIN policy_transaction_data t ON t.POLICY_ID = p.POLICY_ID
+WHERE t.TRANSACTION_TYPE = 'Sale'
+    AND f.TRADE IS NOT NULL
+GROUP BY f.TRADE
+HAVING COUNT(DISTINCT p.POLICY_ID) > 10
+ORDER BY total_commission DESC
+LIMIT 15;
