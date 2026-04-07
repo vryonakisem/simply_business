@@ -1,0 +1,9 @@
+SELECT 
+    TRANSACTION_REASON,
+    TRANSACTION_REASON_TYPE,
+    COUNT(*) AS cancellations,
+    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS pct_of_total
+FROM policy_transaction_data
+WHERE TRANSACTION_TYPE = 'Cancellation'
+GROUP BY TRANSACTION_REASON, TRANSACTION_REASON_TYPE
+ORDER BY cancellations DESC;
