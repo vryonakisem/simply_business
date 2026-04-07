@@ -1,0 +1,8 @@
+SELECT 
+    PAYMENT_METHOD,
+    COUNT(*) AS total_transactions,
+    SUM(CASE WHEN TRANSACTION_TYPE = 'Cancellation' THEN 1 ELSE 0 END) AS cancellations,
+    ROUND(SUM(CASE WHEN TRANSACTION_TYPE = 'Cancellation' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS cancellation_pct
+FROM policy_transaction_data
+GROUP BY PAYMENT_METHOD
+ORDER BY cancellation_pct DESC;
