@@ -1,0 +1,10 @@
+SELECT 
+    TRADE,
+    COUNT(*) AS forms,
+    SUM(POLICY_SALES) AS sales,
+    ROUND(SUM(POLICY_SALES) * 100.0 / COUNT(*), 1) AS conversion_pct
+FROM form_submissions
+WHERE TRADE IS NOT NULL
+GROUP BY TRADE
+HAVING COUNT(*) > 50
+ORDER BY forms DESC;
