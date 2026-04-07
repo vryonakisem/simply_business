@@ -1,0 +1,20 @@
+SELECT 
+    f.TRADE,
+    COUNT(DISTINCT f.FORM_ID) AS total_forms,
+    SUM(CASE WHEN f.NUMBER_OF_QUOTES = 0 THEN 1 ELSE 0 END) AS referred_forms,
+    ROUND(SUM(CASE WHEN f.NUMBER_OF_QUOTES = 0 THEN 1.0 ELSE 0 END) * 100 / COUNT(*), 1) AS referral_pct,
+    ROUND(SUM(t.COMMISSION) / NULLIF(COUNT(DISTINCT p.POLICY_ID), 0), 0) AS commission_per_policy,
+    ROUND(
+        SUM(CASE WHEN f.NUMBER_OF_QUOTES = 0 THEN 1.0 ELSE 0 END)
+        * 0.28
+        * SUM(t.COMMISSION) / NULLIF(COUNT(DISTINCT p.POLICY_ID), 0)
+    , 0) AS est_lost_commission
+FROM form_submissions f
+LEFT JOIN policy_data p ON p.FORM_ID = f.FORM_ID
+LEFT JOIN policy_transaction_data t ON t.POLICY_ID = p.POLICY_ID
+    AND t.TRANSACTION_TYPE = 'Sale'
+WHERE f.TRADE IS NOT NULL
+GROUP BY f.TRADE
+HAVING COUNT(DISTINCT f.FORM_ID) > 20
+ORDER BY est_lost_commission DESC NULLS LAST
+LIMIT 15;
