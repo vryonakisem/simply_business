@@ -1,0 +1,14 @@
+SELECT 
+    CASE 
+        WHEN NUMBER_OF_QUOTES = 0 THEN '0 - Referred'
+        WHEN NUMBER_OF_QUOTES = 1 THEN '1 - Single quote'
+        WHEN NUMBER_OF_QUOTES BETWEEN 2 AND 5 THEN '2-5 quotes'
+        WHEN NUMBER_OF_QUOTES BETWEEN 6 AND 10 THEN '6-10 quotes'
+        ELSE '11+ quotes'
+    END AS quote_bucket,
+    COUNT(*) AS forms,
+    SUM(POLICY_SALES) AS sales,
+    ROUND(SUM(POLICY_SALES) * 100.0 / COUNT(*), 1) AS conversion_pct
+FROM form_submissions
+GROUP BY 1
+ORDER BY MIN(NUMBER_OF_QUOTES);
