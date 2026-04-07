@@ -1,0 +1,75 @@
+CREATE VIEW vw_master AS
+SELECT 
+    f.FORM_ID,
+    f.CUSTOMER_ID,
+    f.FORM_CHANNEL,
+    f.CREATED_AT,
+    f.TRADE,
+    f.BUSINESS_TYPE,
+    f.ANNUAL_TURNOVER,
+    f.NUMBER_OF_QUOTES,
+    f.DECISION,
+    f.LIFECYCLE,
+    f.POLICY_SALES,
+    
+    -- Calculated columns
+    CASE WHEN f.NUMBER_OF_QUOTES = 0 THEN 'Referred' ELSE 'Quoted' END AS quote_status,
+    
+    CASE 
+        WHEN f.NUMBER_OF_QUOTES = 0 THEN '0 - No quote'
+        WHEN f.NUMBER_OF_QUOTES = 1 THEN '1 - Single'
+        WHEN f.NUMBER_OF_QUOTES BETWEEN 2 AND 5 THEN '2-5 - Few'
+        WHEN f.NUMBER_OF_QUOTES BETWEEN 6 AND 10 THEN '6-10 - Many'
+        ELSE '11+ - Overloaded'
+    END AS quote_bucket,
+
+    CASE 
+        WHEN f.ANNUAL_TURNOVER <= 25000 THEN '1 - Micro (<25k)'
+        WHEN f.ANNUAL_TURNOVER <= 50000 THEN '2 - Small (25-50k)'
+        WHEN f.ANNUAL_TURNOVER <= 100000 THEN '3 - Medium (50-100k)'
+        WHEN f.ANNUAL_TURNOVER <= 250000 THEN '4 - Growing (100-250k)'
+        ELSE '5 - Large (250k+)'
+    END AS turnover_band,
+
+    CASE 
+        WHEN f.YEARS_TRADING = 'Over 5 Years' THEN 'Established'
+        WHEN f.YEARS_TRADING = '1 to 5 years' THEN 'Growing'
+        ELSE 'New'
+    END AS business_maturity,
+
+    -- Policy info
+    p.POLICY_ID,
+    p.INSURER,
+    p.POSITION_IN_CHAIN,
+    p.POLICY_CHAIN_ID,
+    p.CHANNEL AS PURCHASE_CHANNEL,
+
+    CASE 
+        WHEN p.POSITION_IN_CHAIN = 1 THEN 'New Business'
+        WHEN p.POSITION_IN_CHAIN = 2 THEN 'First Renewal'
+        WHEN p.POSITION_IN_CHAIN BETWEEN 3 AND 5 THEN 'Established'
+        WHEN p.POSITION_IN_CHAIN > 5 THEN 'Loyal'
+        ELSE NULL
+    END AS customer_tenure_band,
+
+    -- Transaction info
+    t.TRANSACTION_TYPE,
+    t.PAYMENT_METHOD,
+    t.COVER_NAME,
+    t.GROSS_PREMIUM_EXCL_IPT,
+    t.COMMISSION,
+    t.TRANSACTION_REASON,
+    t.TRANSACTION_REASON_TYPE,
+
+    CASE 
+        WHEN t.TRANSACTION_TYPE = 'Cancellation' 
+         AND t.TRANSACTION_REASON = 'Unsuccessful direct debit payment' 
+        THEN 'DD Failure'
+        WHEN t.TRANSACTION_TYPE = 'Cancellation' 
+        THEN 'Other Cancellation'
+        ELSE 'Active'
+    END AS policy_status
+
+FROM form_submissions f
+LEFT JOIN policy_data p ON p.FORM_ID = f.FORM_ID
+LEFT JOIN policy_transaction_data t ON t.POLICY_ID = p.POLICY_ID;
