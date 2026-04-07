@@ -1,0 +1,13 @@
+SELECT 
+    f.BUSINESS_TYPE,
+    COUNT(DISTINCT f.FORM_ID) AS forms,
+    SUM(f.POLICY_SALES) AS sales,
+    ROUND(SUM(f.POLICY_SALES) * 100.0 / COUNT(DISTINCT f.FORM_ID), 1) AS conversion_pct,
+    ROUND(SUM(t.COMMISSION), 0) AS total_commission
+FROM form_submissions f
+LEFT JOIN policy_data p ON p.FORM_ID = f.FORM_ID
+LEFT JOIN policy_transaction_data t ON t.POLICY_ID = p.POLICY_ID 
+    AND t.TRANSACTION_TYPE = 'Sale'
+WHERE f.BUSINESS_TYPE IS NOT NULL
+GROUP BY f.BUSINESS_TYPE
+ORDER BY total_commission DESC;
