@@ -1,0 +1,7 @@
+SELECT 
+    LIFECYCLE,
+    COUNT(*) AS forms,
+    SUM(POLICY_SALES) AS sales,
+    ROUND(SUM(POLICY_SALES) * 100.0 / COUNT(*), 1) AS conversion_pct
+FROM form_submissions
+GROUP BY LIFECYCLE;
