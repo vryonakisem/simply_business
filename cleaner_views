@@ -1,0 +1,24 @@
+-- Which turnover band converts best?
+SELECT turnover_band, COUNT(*) AS forms,
+       ROUND(AVG(POLICY_SALES) * 100, 1) AS conversion_pct
+FROM vw_master
+GROUP BY turnover_band
+ORDER BY turnover_band;
+
+-- Commission by customer tenure band
+SELECT customer_tenure_band,
+       COUNT(DISTINCT POLICY_ID) AS policies,
+       ROUND(SUM(COMMISSION), 0) AS total_commission,
+       ROUND(AVG(COMMISSION), 2) AS avg_commission
+FROM vw_master
+WHERE TRANSACTION_TYPE = 'Sale'
+GROUP BY customer_tenure_band;
+
+-- High-value trades being turned away
+SELECT TRADE, quote_status,
+       COUNT(*) AS forms,
+       ROUND(AVG(COMMISSION), 0) AS avg_commission
+FROM vw_master
+GROUP BY TRADE, quote_status
+HAVING COUNT(*) > 20
+ORDER BY avg_commission DESC;
