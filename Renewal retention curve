@@ -1,0 +1,7 @@
+SELECT 
+    POSITION_IN_CHAIN,
+    COUNT(*) AS policies_at_position,
+    ROUND(COUNT(*) * 100.0 / MAX(COUNT(*)) OVER (), 1) AS pct_surviving
+FROM policy_data
+GROUP BY POSITION_IN_CHAIN
+ORDER BY POSITION_IN_CHAIN;
