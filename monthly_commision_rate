@@ -1,0 +1,8 @@
+SELECT 
+    STRFTIME('%Y-%m', TRANSACTION_DATE) AS month,
+    ROUND(SUM(CASE WHEN TRANSACTION_TYPE = 'Sale' THEN COMMISSION ELSE 0 END), 0) AS commission_earned,
+    ROUND(SUM(CASE WHEN TRANSACTION_TYPE = 'Cancellation' THEN ABS(COMMISSION) ELSE 0 END), 0) AS commission_lost,
+    ROUND(SUM(COMMISSION), 0) AS net_commission
+FROM policy_transaction_data
+GROUP BY month
+ORDER BY month;
